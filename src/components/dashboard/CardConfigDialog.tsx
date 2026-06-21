@@ -12,8 +12,8 @@ export function CardConfigDialog({ card, onSave }: { card: any; onSave: (config:
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-6 w-6"><Settings2 className="h-3 w-3" /></Button>
+      <DialogTrigger render={<Button variant="ghost" size="icon" className="h-6 w-6" />}>
+        <Settings2 className="h-3 w-3" />
       </DialogTrigger>
       <DialogContent>
         <DialogHeader><DialogTitle>Personalizar Card</DialogTitle></DialogHeader>

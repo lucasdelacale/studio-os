@@ -2,14 +2,15 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
-export async function PUT(req: Request, { params }: { params: { cardId: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ cardId: string }> }) {
+  const { cardId } = await params
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  const card = await prisma.card.findFirst({ where: { id: params.cardId, userId: session.user.id } })
+  const card = await prisma.card.findFirst({ where: { id: cardId, userId: session.user.id } })
   if (!card) return NextResponse.json({ error: "Not found" }, { status: 404 })
   const body = await req.json()
   const updated = await prisma.card.update({
-    where: { id: params.cardId },
+    where: { id: cardId },
     data: {
       title: body.title,
       positionX: body.positionX,
@@ -31,11 +32,12 @@ export async function PUT(req: Request, { params }: { params: { cardId: string }
   return NextResponse.json(updated)
 }
 
-export async function DELETE(_req: Request, { params }: { params: { cardId: string } }) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ cardId: string }> }) {
+  const { cardId } = await params
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  const card = await prisma.card.findFirst({ where: { id: params.cardId, userId: session.user.id } })
+  const card = await prisma.card.findFirst({ where: { id: cardId, userId: session.user.id } })
   if (!card) return NextResponse.json({ error: "Not found" }, { status: 404 })
-  await prisma.card.delete({ where: { id: params.cardId } })
+  await prisma.card.delete({ where: { id: cardId } })
   return NextResponse.json({ success: true })
 }

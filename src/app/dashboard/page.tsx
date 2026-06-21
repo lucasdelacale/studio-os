@@ -4,12 +4,16 @@ import { DashboardGrid } from "@/components/dashboard/DashboardGrid"
 import { AddCardButton } from "@/components/dashboard/AddCardButton"
 import { TodayView } from "@/components/dashboard/TodayView"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { redirect } from "next/navigation"
 
 export default async function DashboardPage() {
   const session = await auth()
-  const dashboards = await prisma.dashboard.findMany({ where: { userId: session!.user!.id } })
+  const userId = session?.user?.id
+  if (!userId) redirect("/login")
+
+  const dashboards = await prisma.dashboard.findMany({ where: { userId } })
   if (dashboards.length === 0) {
-    const dashboard = await prisma.dashboard.create({ data: { userId: session!.user!.id, name: "Meu Dashboard", isDefault: true } })
+    const dashboard = await prisma.dashboard.create({ data: { userId, name: "Meu Dashboard", isDefault: true } })
     return (
       <Tabs defaultValue="dashboard">
         <TabsList>
@@ -29,7 +33,7 @@ export default async function DashboardPage() {
   }
   const defaultDashboard = dashboards.find(d => d.isDefault) ?? dashboards[0]
   const cards = await prisma.card.findMany({
-    where: { userId: session!.user!.id, dashboardId: defaultDashboard.id },
+    where: { userId, dashboardId: defaultDashboard.id },
     include: { taskContent: true, noteContent: true, habitContent: true, chartContent: true, timerContent: true, financeContent: true, moodContent: true },
     orderBy: [{ positionY: "asc" }, { positionX: "asc" }],
   })

@@ -1,6 +1,6 @@
 "use client"
 
-import { signOut } from "@/lib/auth"
+import { handleSignOut } from "@/app/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Moon, Sun } from "lucide-react"
@@ -21,7 +21,7 @@ export function DashboardHeader({ user }: { user: { name?: string | null; image?
           <AvatarImage src={user.image ?? undefined} />
           <AvatarFallback>{user.name?.charAt(0) ?? "U"}</AvatarFallback>
         </Avatar>
-        <form action={async () => { "use server"; await signOut() }}>
+        <form action={handleSignOut}>
           <Button variant="outline" size="sm" type="submit">Sair</Button>
         </form>
       </div>
