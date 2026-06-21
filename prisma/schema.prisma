@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String       @id @default(cuid())
+  name       String?
+  email      String?      @unique
+  image      String?
+  createdAt  DateTime     @default(now())
+  cards      Card[]
+  folders    Folder[]
+  statuses   CardStatus[]
+  dashboards Dashboard[]
+  templates  Template[]
+}
+
+model Dashboard {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  isDefault  Boolean  @default(false)
+  isFavorite Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  cards      Card[]
+}
+
+model Card {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dashboardId   String
+  dashboard     Dashboard @relation(fields: [dashboardId], references: [id])
+  type          String    @default("task")
+  title         String    @default("Novo Card")
+  positionX     Int       @default(0)
+  positionY     Int       @default(0)
+  width         Int       @default(2)
+  height        Int       @default(2)
+  config        Json      @default("{}")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  taskContent    CardTask?
+  noteContent    CardNote?
+  habitContent   CardHabit?
+  chartContent   CardChart?
+  timerContent   CardTimer?
+  financeContent CardFinance?
+  moodContent    CardMood?
+
+  chartSourceId String?
+  chartSource   Card?     @relation("ChartSource", fields: [chartSourceId], references: [id])
+  chartCards    Card[]    @relation("ChartSource")
+  bookmarkContent CardBookmark?
+}
+
+model CardStatus {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name   String
+  color  String
+  order  Int    @default(0)
+}
+
+model CardTask {
+  cardId       String  @id
+  card         Card    @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  items        Json    @default("[]")
+  viewMode     String  @default("list")
+  showProgress Boolean @default(true)
+}
+
+model CardNote {
+  cardId   String  @id
+  card     Card    @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  content  Json    @default("{}")
+  folderId String?
+  folder   Folder? @relation(fields: [folderId], references: [id])
+}
+
+model Folder {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  parentId  String?
+  parent    Folder?  @relation("FolderTree", fields: [parentId], references: [id])
+  children  Folder[] @relation("FolderTree")
+  createdAt DateTime @default(now())
+  notes     CardNote[]
+}
+
+model CardHabit {
+  cardId      String @id
+  card        Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  logs        Json   @default("[]")
+  goalPerWeek Int    @default(7)
+}
+
+model CardChart {
+  cardId       String @id
+  card         Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  sourceCardId String
+  chartType    String
+  config       Json   @default("{}")
+}
+
+model CardTimer {
+  cardId       String @id
+  card         Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  sessions     Json   @default("[]")
+  totalMinutes Int    @default(0)
+  linkedTaskId String?
+}
+
+model CardFinance {
+  cardId   String @id
+  card     Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  entries  Json   @default("[]")
+  currency String @default("BRL")
+  goals    Json   @default("[]")
+}
+
+model CardMood {
+  cardId  String @id
+  card    Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  entries Json   @default("[]")
+}
+
+model CardBookmark {
+  cardId String @id
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  links  Json   @default("[]")
+}
+
+model Template {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  layout    Json
+  createdAt DateTime @default(now())
+}
