@@ -5,39 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
-
-    try {
-      const result = await signIn("credentials", {
-        username,
-        password,
-        redirect: false,
-      })
-
-      if (result?.error) {
-        setError("Usuário ou senha inválidos")
-      } else {
-        router.push("/dashboard")
-        router.refresh()
-      }
-    } catch {
-      setError("Erro ao fazer login")
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [email, setEmail] = useState("")
 
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -45,26 +15,31 @@ export default function LoginPage() {
         <CardHeader>
           <CardTitle>Entrar no Studio Os</CardTitle>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <p className="text-sm text-red-500">{error}</p>
-            )}
+        <CardContent className="space-y-4">
+          <Button className="w-full" onClick={() => signIn("google")}>
+            Continuar com Google
+          </Button>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">ou</span>
+            </div>
+          </div>
+          <form action={async (formData) => {
+            "use server"
+            await signIn("resend", { email: formData.get("email") as string })
+          }}>
             <Input
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
+              name="email"
+              type="email"
+              placeholder="seu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
-            <Input
-              type="password"
-              placeholder="Senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Entrando..." : "Entrar"}
+            <Button type="submit" className="w-full mt-2">
+              Enviar magic link
             </Button>
           </form>
         </CardContent>
