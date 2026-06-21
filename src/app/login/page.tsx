@@ -1,6 +1,6 @@
 "use client"
 
-import { signIn } from "@/lib/auth"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -12,7 +12,7 @@ export default function LoginPage() {
           <CardTitle>Entrar no Studio Os</CardTitle>
         </CardHeader>
         <CardContent>
-          <Button className="w-full" onClick={() => signIn("google")}>
+          <Button className="w-full" onClick={() => signIn("google", { callbackUrl: "/dashboard" })}>
             Continuar com Google
           </Button>
         </CardContent>
