@@ -1,2 +1,14 @@
-export { auth as middleware } from "@/lib/auth"
-export const config = { matcher: ["/dashboard/:path*"] }
+import { auth } from "@/lib/auth"
+
+export default auth((req) => {
+  if (!req.auth && req.nextUrl.pathname.startsWith("/dashboard")) {
+    const loginUrl = new URL("/login", req.nextUrl.origin)
+    return Response.redirect(loginUrl)
+  }
+})
+
+export const config = {
+  matcher: ["/dashboard/:path*"],
+}
+
+export const runtime = "nodejs"
